@@ -1,15 +1,40 @@
+const OpenAI = require('openai')
 const express = require('express')
 const app = express()
 const PORT = 4000
 
 
-app.get('/home', (req, res) => {
-  res.status(200).json('Welcome, your app is working well');
+
+app.use('/static', express.static('static'));
+
+app.get('/', (req, res) => {
+    // send redirect to index.html
+    res.redirect('/static/index.html');
+})
+
+app.get('/gpt', async (req, res) => {
+    const OPEN_AI_API_KEY = req.query.key;
+    // validate key
+    if (!OPEN_AI_API_KEY || (OPEN_AI_API_KEY.length > 55 || OPEN_AI_API_KEY.length < 45)) {
+        res.status(400).json('Invalid API Key');
+        return;
+    }
+    // create gpt instance
+    const gpt = new OpenAI({apiKey: OPEN_AI_API_KEY});
+    const chatCompletion = await gpt.chat.completions.create({
+        messages: [{ role: 'user', content: 'Tell me a joke' }],
+        model: 'gpt-3.5-turbo',
+    });
+    res.status(200).json(chatCompletion);
+})
+
+app.get('/test', (req, res) => {
+    res.status(200).json('test');
 })
 
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server running at http://localhost:${PORT}`);
 });
 
 // Export the Express API
