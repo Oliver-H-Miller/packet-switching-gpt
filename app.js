@@ -1,11 +1,12 @@
 const OpenAI = require('openai')
 const express = require('express')
 const app = express()
+const path = require('path')
 const PORT = 4000
 
 
 
-app.use('/static', express.static('static'));
+app.use('/static', express.static(path.join(__dirname, 'static')))
 
 app.get('/', (req, res) => {
     // send redirect to index.html
