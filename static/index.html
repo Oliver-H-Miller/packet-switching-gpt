@@ -10,6 +10,9 @@
         body {
             font-family: 'Roboto', sans-serif;
         }
+        * {
+            scroll-behavior: smooth;
+        }
         nav {
             background-color: #f8f9fa;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -38,15 +41,59 @@
             border-radius: 4px;
             background-color: #fff;
         }
-        .hint {
+        .bottom-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+
+        .square {
+            width: 50px;
+            height: 50px;
+            margin: 0 10px;
+            background-color: #ddd;
+        }
+
+        #tabContainer {
             position: fixed;
-            bottom: 16px;
+            bottom: 0;
             left: 0;
-            right: 0;
-            text-align: center;
-            font-style: italic;
-            background-color: white;
-            padding: 8px;
+            width: 100%;
+            background-color: #f8f9fa;
+        }
+
+        .tab-container {
+            border: 1px solid #ddd;
+            padding-top: 5px;
+            height: 300px;
+            transition: all 0.5s ease-in-out;
+            overflow-y: auto;
+        }
+
+        .tab-container-mini {
+            border: 1px solid #ddd;
+            padding-top: 5px;
+            height: 100px !important;
+            transition: all 0.5s ease-in-out;
+        }
+
+        .device-title {
+            color: #fff;
+            border-bottom: 1px solid green;
+        }
+
+        #collapsibleIcon {
+            transition: all 0.5s ease-in-out;
+        }
+
+        .rotate-icon {
+            transform: rotate(180deg);
         }
     </style>
 </head>
@@ -81,24 +128,70 @@
         <canvas id="networkCanvas" width="800" height="400"></canvas>
     </div>
 
-    <div class="hint">
-        Hint: select a host or switch to view terminal
+    <!-- Tab navigation -->
+    <div id="tabContainer">
+        <!-- Collapsible icon -->
+    <!-- Collapsible icon -->
+    <div class="flex justify-center items-center p-2 cursor-pointer" onclick="toggleIcon()">
+        <svg id="collapsibleIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
     </div>
 
+        <div class="flex divide-x divide-gray-300">
+            <!-- Tab 1 -->
+            <div class="flex-1 p-4 text-center tab-container bg-black">
+                <h1 class="text-xl font-semibold device-title">h1s1 [0]</h1>
+                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <span class="terminal-anchor">&nbsp;</span>
+            </div>
+            <!-- Tab 2 -->
+            <div class="flex-1 p-4 text-center tab-container bg-black">
+                <h1 class="text-xl font-semibold device-title">h2s1 [1]</h1>
+                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <span class="terminal-anchor">&nbsp;</span>
+            </div>
+            <!-- Tab 3 -->
+            <div class="flex-1 p-4 text-center tab-container bg-black">
+                <h1 class="text-xl font-semibold device-title">s1 [2]</h1>
+                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <span class="terminal-anchor">&nbsp;</span>
+            </div>
+            <!-- Tab 4 -->
+            <div class="flex-1 p-4 text-center tab-container bg-black">
+                <h1 class="text-xl font-semibold device-title">s2 [3]</h1>
+                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <span class="terminal-anchor">&nbsp;</span>
+            </div>
+            <!-- Tab 5 -->
+            <div class="flex-1 p-4 text-center tab-container bg-black">
+                <h1 class="text-xl font-semibold device-title">h1s2 [4]</h1>
+                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <span class="terminal-anchor">&nbsp;</span>
+            </div>
+            <!-- Tab 6 -->
+            <div class="flex-1 p-4 text-center tab-container bg-black">
+                <h1 class="text-xl font-semibold device-title">h2s2 [5]</h1>
+                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <span class="terminal-anchor">&nbsp;</span>
+            </div>
+        </div>
+    </div>
+</html>
+
     <script>
+        function toggleIcon() {
+            const icon = document.getElementById("collapsibleIcon");
+            icon.classList.toggle("rotate-icon");
+            document.getElementById("tabContainer").classList.toggle("tab-container-mini");
+        }
+
         const canvas = document.getElementById('networkCanvas');
         const ctx = canvas.getContext('2d');
 
         // Draw the network diagram on the canvas
-        function drawNetworkDiagram() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#000';
-            ctx.font = '16px Roboto';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            // Hosts and switches positions
-            const elements = [
+        // Hosts and switches positions
+        const elements = [
                 { name: 'h1s1', x: 100, y: 100 },
                 { name: 's1', x: 300, y: 200 },
                 { name: 's2', x: 500, y: 200 },
@@ -106,6 +199,23 @@
                 { name: 'h2s1', x: 100, y: 300 },
                 { name: 'h2s2', x: 700, y: 300 }
             ];
+
+        function appendToTabConsole(tab, text) {
+            tab++;
+            const consolet = document.querySelector(`.tab-container:nth-child(${tab}) .device-console`);
+            consolet.innerHTML += `<p>${text}</p>`;
+
+            // Scroll to respective terminal anchor
+            const terminalAnchor = document.querySelector(`.tab-container:nth-child(${tab}) .terminal-anchor`);
+            terminalAnchor.scrollIntoView();
+        }
+
+        function drawNetworkDiagram() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#000';
+            ctx.font = '16px Roboto';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
 
             // Draw elements
             elements.forEach(el => {
