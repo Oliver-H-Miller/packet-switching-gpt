@@ -95,6 +95,11 @@
         .rotate-icon {
             transform: rotate(180deg);
         }
+
+        .device-console {
+            font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -142,37 +147,37 @@
             <!-- Tab 1 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
                 <h1 class="text-xl font-semibold device-title">h1s1 [0]</h1>
-                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <p class="text-green-500 text-left device-console">Ready!</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
             <!-- Tab 2 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
                 <h1 class="text-xl font-semibold device-title">h2s1 [1]</h1>
-                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <p class="text-green-500 text-left device-console">Ready!</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
             <!-- Tab 3 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
                 <h1 class="text-xl font-semibold device-title">s1 [2]</h1>
-                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <p class="text-green-500 text-left device-console">Ready!</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
             <!-- Tab 4 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
                 <h1 class="text-xl font-semibold device-title">s2 [3]</h1>
-                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <p class="text-green-500 text-left device-console">Ready!</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
             <!-- Tab 5 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
                 <h1 class="text-xl font-semibold device-title">h1s2 [4]</h1>
-                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <p class="text-green-500 text-left device-console">Ready!</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
             <!-- Tab 6 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
                 <h1 class="text-xl font-semibold device-title">h2s2 [5]</h1>
-                <p class="text-sm text-green-500 mt-1 text-left device-console">s1</p>
+                <p class="text-green-500 text-left device-console">Ready!</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
         </div>
@@ -259,9 +264,19 @@
             this.disabled = true;
             this.appendChild(createSpinner());
             // Simulate a network request or action
+            let validKey = false;
+            
+            // Set validKey to user cookie if it exists
+            if (document.cookie.split(';').some((item) => item.trim().startsWith('key='))) {
+                // Get the key from the cookie
+                validKey = document.cookie.replace(/(?:(?:^|.*;\s*)key\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+            }
+
+
             setTimeout(() => {
                 this.innerHTML = 'Run';
                 this.disabled = false;
+                if (!validKey) alert("Please configure a valid OpenAI key.");
             }, 3000); // 3 seconds delay for demonstration
         });
 
