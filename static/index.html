@@ -118,10 +118,10 @@
                 <option>Src: h2s2</option>
             </select>
             <select id="destination" name="destination" class="block pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                <option>Dst: h1s2</option>
-                <option>Dst: h2s2</option>
-                <option>Dst: h1s1</option>
-                <option>Dst: h2s1</option>
+                <option>Dst: 10.0.0.1</option>
+                <option>Dst: 10.0.0.2</option>
+                <option>Dst: 10.0.0.3</option>
+                <option>Dst: 10.0.0.4</option>
             </select>
             <button id="runButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 Run
@@ -144,40 +144,40 @@
     </div>
 
         <div class="flex divide-x divide-gray-300">
-            <!-- Tab 1 -->
+            <!-- Tab 0 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
                 <h1 class="text-xl font-semibold device-title">h1s1 [0]</h1>
-                <p class="text-green-500 text-left device-console">Ready!</p>
+                <p class="text-green-500 text-left device-console">Ready at 10.0.0.1! I am connected to s1.</p>
+                <span class="terminal-anchor">&nbsp;</span>
+            </div>
+            <!-- Tab 1 -->
+            <div class="flex-1 p-4 text-center tab-container bg-black">
+                <h1 class="text-xl font-semibold device-title">h2s1 [1]</h1>
+                <p class="text-green-500 text-left device-console">Ready at 10.0.0.2! I am connected to s1.</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
             <!-- Tab 2 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
-                <h1 class="text-xl font-semibold device-title">h2s1 [1]</h1>
-                <p class="text-green-500 text-left device-console">Ready!</p>
+                <h1 class="text-xl font-semibold device-title">s1 [2]</h1>
+                <p class="text-green-500 text-left device-console">Ready! Connected to h1s1, h2s1 &amp; s2!</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
             <!-- Tab 3 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
-                <h1 class="text-xl font-semibold device-title">s1 [2]</h1>
-                <p class="text-green-500 text-left device-console">Ready!</p>
+                <h1 class="text-xl font-semibold device-title">s2 [3]</h1>
+                <p class="text-green-500 text-left device-console">Ready! Connected to h1s2, h2s2 &amp; s1!</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
             <!-- Tab 4 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
-                <h1 class="text-xl font-semibold device-title">s2 [3]</h1>
-                <p class="text-green-500 text-left device-console">Ready!</p>
+                <h1 class="text-xl font-semibold device-title">h1s2 [4]</h1>
+                <p class="text-green-500 text-left device-console">Ready at 10.0.0.3! I am connected to s2.</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
             <!-- Tab 5 -->
             <div class="flex-1 p-4 text-center tab-container bg-black">
-                <h1 class="text-xl font-semibold device-title">h1s2 [4]</h1>
-                <p class="text-green-500 text-left device-console">Ready!</p>
-                <span class="terminal-anchor">&nbsp;</span>
-            </div>
-            <!-- Tab 6 -->
-            <div class="flex-1 p-4 text-center tab-container bg-black">
                 <h1 class="text-xl font-semibold device-title">h2s2 [5]</h1>
-                <p class="text-green-500 text-left device-console">Ready!</p>
+                <p class="text-green-500 text-left device-console">Ready at 10.0.0.4! I am connected to s2.</p>
                 <span class="terminal-anchor">&nbsp;</span>
             </div>
         </div>
@@ -185,6 +185,69 @@
 </html>
 
     <script>
+        // check if cookie with key 'api_key' exists
+        const hasCookie = document.cookie.split(';').some((item) => item.trim().startsWith('api_key='));
+        let api_key = "";
+        if (hasCookie) {
+            // Get the key from the cookie
+            api_key = document.cookie.replace(/(?:(?:^|.*;\s*)api_key\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+        } else {
+            // Generate a new key
+            api_key = prompt("Please enter your API key");
+            // Set the cookie
+            document.cookie = `api_key=${api_key}; expires=Fri, 31 Dec 9999 23:59:59 GMT`;
+        }
+
+
+        let allowedRun = true;
+        let state = [];
+        const mapping = {
+                'Action: Send ICMP Packet': 'ping',
+                'Action: Send ARP Packet': 'arping',
+                'Action: Perform TCP Dump': 'tcpdump',
+                'Src: h1s1': 'h1s1',
+                'Src: h2s1': 'h2s1',
+                'Src: h1s2': 'h1s2',
+                'Src: h2s2': 'h2s2',
+                'Dst: 10.0.0.1': '10.0.0.1',
+                'Dst: 10.0.0.2': '10.0.0.2',
+                'Dst: 10.0.0.3': '10.0.0.3',
+                'Dst: 10.0.0.4': '10.0.0.4',
+                'h1s1': '0',
+                'h2s1': '1',
+                's1': '2',
+                's2': '3',
+                'h1s2': '4',
+                'h2s2': '5',
+                'Src: s1': 's1', // annoying but for prepareNextPacket
+                'Src: s2': 's2',
+                'Src: h1': 'h1s1', // also really annoying but GPT sometimes leaves out the s1/s2
+                'Src: h2': 'h2s1',
+                'Src: h3': 'h1s2',
+                'Src: h4': 'h2s2',
+        };
+
+        const promptHost = "You are a host. You will receive commands from the user. You do not know what you are connected to unless explicity told. If you cannot reach the destination, you will send an ARP request for the address of the destination. Respond with a JSON object containing your action, with the keys 'packet', 'nextRecipient', and 'endHost' (the destination's hostname, e.g. hNsN). nextRecipient may be either a switch or host or empty if the packet successfully reached its destination. A recipient cannot be an entity that you are not directly connected with.";
+        const promptSwitch = "You are a switch. You will receive packets from the hosts and forward them to the destination or to another switch. You do not know what you are connected to unless explicity told. If you cannot directly reach the destination, you will broadcast the packet to all connected devices. Respond with a JSON object containing your action, with the keys 'packet', 'nextRecipient', and 'endHost' (the destination's hostname, e.g. hNsN). nextRecipient may be either a switch or host. A recipient cannot be an entity that you are not directly connected with.";        // for each tab, create a state object
+        for (let i = 0; i < 6; i++) {
+            if (i === 0 || i === 1 || i === 4 || i === 5) {
+                state.push(promptHost);
+            } else {
+                state.push(promptSwitch);
+            }
+
+            if (i === 2) { // s1
+                // Specify specific hosts and switches connected to this switch
+                state[i] += " You are directly connected with h1s1 (10.0.0.1), h2s1 (10.0.0.2), and s2.";
+            }
+            if (i === 3) { // s2
+                state[i] += " You are directly connected with h1s2 (10.0.0.3), h2s2 (10.0.0.4), and s1.";
+            }
+
+            state[i] += " " + document.querySelector(`.tab-container:nth-child(${i + 1}) .device-console`).innerHTML;
+        }
+        console.log(state);
+
         function toggleIcon() {
             const icon = document.getElementById("collapsibleIcon");
             icon.classList.toggle("rotate-icon");
@@ -266,19 +329,83 @@
             // Simulate a network request or action
             let validKey = false;
             
-            // Set validKey to user cookie if it exists
-            if (document.cookie.split(';').some((item) => item.trim().startsWith('key='))) {
-                // Get the key from the cookie
-                validKey = document.cookie.replace(/(?:(?:^|.*;\s*)key\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-            }
+            // // Set validKey to user cookie if it exists
+            // if (document.cookie.split(';').some((item) => item.trim().startsWith('key='))) {
+            //     // Get the key from the cookie
+            //     validKey = document.cookie.replace(/(?:(?:^|.*;\s*)key\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+            // }
 
+            const action = document.getElementById('action').value;
+            const src = document.getElementById('source').value;
+            const dst = document.getElementById('destination').value;
+
+            console.log(action, src, dst);
+
+            const command = `${mapping[src]}> ${mapping[action]} to end host ${mapping[dst]}.`;
+            console.log(command);
+
+            executeGPT(src, command);
 
             setTimeout(() => {
                 this.innerHTML = 'Run';
                 this.disabled = false;
-                if (!validKey) alert("Please configure a valid OpenAI key.");
             }, 3000); // 3 seconds delay for demonstration
         });
+
+        function prepareNextPacket(packet, recipient, endHost) {
+            if (recipient == "") { // if next recipient is empty, we are done
+                return;
+            }
+
+            console.log("Preparing next packet", packet, "to", recipient, "with end dest.", endHost);
+
+            const command = `${recipient}> Incoming ${packet} to end host ${endHost}`;
+
+            executeGPT("Src: " + recipient, command);
+        }
+
+        function executeGPT(src, command) {
+            if (!allowedRun) {
+                return;
+            }
+
+            console.log("Executing GPT from the perspective of", src);
+            let body = {
+                key: api_key,
+                command: command,
+                context: state[mapping[mapping[src]]],
+            };
+            console.log(body);
+
+            // Send command to server on /gpt
+            fetch('/gpt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tab = mapping[mapping[src]];
+                const gptResponse = data.choices[0].message.content;
+                const parsedResponse = JSON.parse(gptResponse);
+                const nextPacket = parsedResponse.packet;
+                const nextRecipient = parsedResponse.nextRecipient;
+                const endHost = parsedResponse.endHost;
+                appendToTabConsole(tab, gptResponse);
+
+                // Update state
+                state[tab] += "\n" + nextPacket + " " + nextRecipient;
+
+                prepareNextPacket(nextPacket, nextRecipient, endHost);
+
+            })
+        }
+
+        function stop() {
+            allowedRun = false;
+        }
 
         function createSpinner() {
             const spinner = document.createElement('div');

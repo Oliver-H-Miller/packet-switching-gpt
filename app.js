@@ -7,15 +7,18 @@ const PORT = 4000
 
 app.use(cors())
 app.use('/static', express.static(path.join(__dirname, 'static')))
+app.use(express.json({type: '*/*'}));
+app.use(express.urlencoded({ extended: false }));
+
 
 app.get('/', (req, res) => {
     // send redirect to index.html
     res.redirect('/static/index.html');
 })
 
-app.get('/gpt', async (req, res) => {
+app.post('/gpt', async (req, res) => {
     /* DO NOT PUBLISH */
-    const OPEN_AI_API_KEY = "REDACTED";
+    const OPEN_AI_API_KEY = req.body.key;
     // const OPEN_AI_API_KEY = req.query.key;
     // // validate key
     // if (!OPEN_AI_API_KEY || (OPEN_AI_API_KEY.length > 55 || OPEN_AI_API_KEY.length < 45)) {
@@ -23,14 +26,28 @@ app.get('/gpt', async (req, res) => {
     //     return;
     // }
     // create gpt instance
+
+    /* Incoming request looks like this:
+            fetch('/gpt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    command: command,
+                    context: state[mapping[src]]
+                })
+            })
+    */
+
     const gpt = new OpenAI({apiKey: OPEN_AI_API_KEY});
     const chatCompletion = await gpt.chat.completions.create({
         messages: [
             {
               role: "system",
-              content: "You are a helpful assistant designed to output JSON.",
+              content: req.body.context,
             },
-            { role: "user", content: "Who won the world series in 2020?" },
+            { role: "user", content: req.body.command },
           ],
           model: "gpt-3.5-turbo-1106",
           response_format: { type: "json_object" },      
