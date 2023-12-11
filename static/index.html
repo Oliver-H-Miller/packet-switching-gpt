@@ -375,6 +375,7 @@
                 command: command,
                 context: state[mapping[mapping[src]]],
             };
+            appendToTabConsole(mapping[mapping[src]], command);
             console.log(body);
 
             // Send command to server on /gpt
