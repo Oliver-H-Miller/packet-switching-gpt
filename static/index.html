@@ -10,9 +10,6 @@
         body {
             font-family: 'Roboto', sans-serif;
         }
-        * {
-            scroll-behavior: smooth;
-        }
         nav {
             background-color: #f8f9fa;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -201,6 +198,7 @@
 
         let allowedRun = true;
         let state = [];
+        let lastEntityReached = -1;
         const mapping = {
                 'Action: Send ICMP Packet': 'ping',
                 'Action: Send ARP Packet': 'arping',
@@ -353,7 +351,9 @@
         });
 
         function prepareNextPacket(packet, recipient, endHost) {
-            if (recipient == "") { // if next recipient is empty, we are done
+            if (recipient == "" && endHost == ""
+                || (recipient == endHost)) { // if next recipient is empty, we are done
+                appendToTabConsole(lastEntityReached, "--END--");
                 return;
             }
 
@@ -395,6 +395,9 @@
                 const nextRecipient = parsedResponse.nextRecipient;
                 const endHost = parsedResponse.endHost;
                 appendToTabConsole(tab, gptResponse);
+
+                // Update last entity reached
+                lastEntityReached = tab;
 
                 // Update state
                 state[tab] += "\n" + nextPacket + " " + nextRecipient;
