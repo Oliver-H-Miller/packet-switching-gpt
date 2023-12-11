@@ -17,28 +17,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/gpt', async (req, res) => {
-    /* DO NOT PUBLISH */
     const OPEN_AI_API_KEY = req.body.key;
-    // const OPEN_AI_API_KEY = req.query.key;
-    // // validate key
-    // if (!OPEN_AI_API_KEY || (OPEN_AI_API_KEY.length > 55 || OPEN_AI_API_KEY.length < 45)) {
-    //     res.status(400).json('Invalid API Key');
-    //     return;
-    // }
-    // create gpt instance
-
-    /* Incoming request looks like this:
-            fetch('/gpt', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    command: command,
-                    context: state[mapping[src]]
-                })
-            })
-    */
 
     const gpt = new OpenAI({apiKey: OPEN_AI_API_KEY});
     const chatCompletion = await gpt.chat.completions.create({
